@@ -54,7 +54,7 @@ def extract_emails(text: str) -> list[str]:
 
 
 def extract_phones(text: str) -> list[str]:
-    phone_pattern = r"\+?\d[\d\s().-]{7,}\d"
+    phone_pattern = r'(?:\+1[-.\s]?)?(?:\(?\d{3}\)?[-.\s]?)\d{3}[-.\s]?\d{4}'
     return list(set(re.findall(phone_pattern, text)))
 
 
