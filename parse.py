@@ -88,7 +88,18 @@ def extract_companies(doc) -> list[str]:
 
 
 def extract_names(doc) -> list[str]:
-    names = [ent.text.strip() for ent in doc.ents if ent.label_ == "PERSON"]
+    names = []
+
+    for ent in doc.ents:
+        if ent.label_ == "PERSON":
+            name = ent.text.strip()
+            lowered = name.lower()
+
+            if any(word in lowered for word in ["team", "recruiting", "recruitment", "hiring", "hr"]):
+                continue
+
+            names.append(name)
+
     return list(set(names))
 
 
