@@ -74,7 +74,7 @@ def main():
         print("Email:")
         print(email)
         print("Extracted Information:")
-        print(parse_email(email))
+        print(parse_email(email, 'Lenin'))
         print("-" * 50)
     
 if __name__ == "__main__":

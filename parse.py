@@ -87,8 +87,10 @@ def extract_companies(doc) -> list[str]:
     return list(set(companies))
 
 
-def extract_names(doc) -> list[str]:
+def extract_names(doc, user_name: str | None = None) -> list[str]:
     names = []
+
+    normalized_user_name = user_name.lower().strip() if user_name else None
 
     for ent in doc.ents:
         if ent.label_ == "PERSON":
@@ -96,6 +98,9 @@ def extract_names(doc) -> list[str]:
             lowered = name.lower()
 
             if any(word in lowered for word in ["team", "recruiting", "recruitment", "hiring", "hr"]):
+                continue
+
+            if normalized_user_name and lowered == normalized_user_name:
                 continue
 
             names.append(name)
@@ -115,7 +120,7 @@ def extract_links(text: str) -> list[str]:
     return list(set(cleaned))
 
 
-def parse_email(text: str) -> dict:
+def parse_email(text: str, user_name: str | None = None) -> dict:
     doc = nlp(text)
 
     return {
@@ -124,6 +129,6 @@ def parse_email(text: str) -> dict:
         "status": extract_status(text),
         "links": extract_links(text),
         "companies": extract_companies(doc),
-        "names": extract_names(doc),
+        "names": extract_names(doc, user_name),
         "dates": extract_dates(doc),
     }
