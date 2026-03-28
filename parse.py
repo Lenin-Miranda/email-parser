@@ -17,13 +17,17 @@ STATUS_PATTERNS = [
         r"\bnot moving forward\b",
         r"\bmove forward with other candidates\b",
         r"\bposition has been filled\b",
+        r"\bnot moving forward with your application\b",
     ]),
     ("interview", [
         r"\binvite you to (an )?interview\b",
         r"\bschedule (a|an)? ?(call|interview)\b",
         r"\bselect a time\b",
         r"\bnext step in the process\b",
-        r"\binterview has been scheduled\b",
+        r"\byour interview .* has been scheduled\b",
+        r"\binterview .* has been scheduled\b",
+        r"\bjoin the meeting here\b",
+        r"\bpick a time\b",
     ]),
     ("applied", [
         r"\breceived your application\b",
@@ -33,6 +37,16 @@ STATUS_PATTERNS = [
     ]),
 ]
 
+COMPANY_BLACKLIST = {
+    "software",
+    "frontend developer",
+    "backend engineer",
+    "software engineer",
+    "recruiting team",
+    "recruitment team",
+    "hiring team",
+    "hr team",
+}
 
 def extract_emails(text: str) -> list[str]:
     email_pattern = r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
@@ -56,7 +70,20 @@ def extract_status(text: str) -> str:
 
 
 def extract_companies(doc) -> list[str]:
-    companies = [ent.text.strip() for ent in doc.ents if ent.label_ == "ORG"]
+    companies = []
+
+    for ent in doc.ents:
+        if ent.label_ == 'ORG':
+            company = ent.text.strip()
+
+            lowered = company.lower()
+
+            if lowered in COMPANY_BLACKLIST:
+                continue
+            if any(word in lowered for word in ['team', 'recruiting', 'recruitment', 'hiring', 'hr']):
+                continue
+            companies.append(company)
+
     return list(set(companies))
 
 
