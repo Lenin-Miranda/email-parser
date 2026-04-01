@@ -93,9 +93,12 @@ def extract_company_from_context(text: str) -> list[str]:
 
     return list(set(cleaned))
 
+def extract_primary_company(companies: list[str]) -> str | None:
+    return companies[0] if companies else None
+
+
 def extract_companies(text: str, doc) -> list[str]:
     companies = []
-
     for ent in doc.ents:
         if ent.label_ == 'ORG':
             company = ent.text.strip()
@@ -155,6 +158,7 @@ def parse_email(text: str, user_name: str | None = None) -> dict:
         "status": extract_status(text),
         "links": extract_links(text),
         "companies": extract_companies(text, doc),
+        "main_company": extract_primary_company(extract_companies(text, doc)),
         "names": extract_names(doc, user_name),
         "dates": extract_dates(doc),
     }
