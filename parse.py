@@ -37,7 +37,9 @@ STATUS_PATTERNS = [
     ]),
 ]
 
+
 COMPANY_BLACKLIST = {
+
     "software",
     "frontend developer",
     "backend engineer",
@@ -68,8 +70,30 @@ def extract_status(text: str) -> str:
 
     return "saved"
 
+def extract_company_from_context(text: str) -> list[str]:
+    patterns = [
+        r"\brole at ([A-Z][A-Za-z0-9&.\-]+)",
+        r"\bposition at ([A-Z][A-Za-z0-9&.\-]+)",
+        r"\bapplication to ([A-Z][A-Za-z0-9&.\-]+)",
+        r"\binterview with ([A-Z][A-Za-z0-9&.\-]+)",
+        r"\bfrom ([A-Z][A-Za-z0-9&.\-]+)",
+        r"\bat ([A-Z][A-Za-z0-9&.\-]+)",
+    ]
 
-def extract_companies(doc) -> list[str]:
+    matches = []
+
+    for pattern in patterns:
+        found = re.findall(pattern, text)
+        matches.extend(found)
+
+    cleaned = []
+    for match in matches:
+        company = match.strip(".,;:()[]{}<> ")
+        cleaned.append(company)
+
+    return list(set(cleaned))
+
+def extract_companies(text: str, doc) -> list[str]:
     companies = []
 
     for ent in doc.ents:
@@ -83,6 +107,8 @@ def extract_companies(doc) -> list[str]:
             if any(word in lowered for word in ['team', 'recruiting', 'recruitment', 'hiring', 'hr']):
                 continue
             companies.append(company)
+        if not companies:
+            companies = extract_company_from_context(doc.text)
 
     return list(set(companies))
 
@@ -128,7 +154,7 @@ def parse_email(text: str, user_name: str | None = None) -> dict:
         "phones": extract_phones(text),
         "status": extract_status(text),
         "links": extract_links(text),
-        "companies": extract_companies(doc),
+        "companies": extract_companies(text, doc),
         "names": extract_names(doc, user_name),
         "dates": extract_dates(doc),
     }
